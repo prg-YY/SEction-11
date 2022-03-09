@@ -75,10 +75,10 @@ const displayMovements = movements => {
 };
 // displayMovements(account1.movements);
 
-const calcDisplayBalance = movements => {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+const calcDisplayBalance = acc => {
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
 
-  labelBalance.textContent = `${balance} EUR`;
+  labelBalance.textContent = `${acc.balance}€`;
 };
 
 const calcDisplaySummary = function (acc) {
@@ -113,6 +113,15 @@ const createUsernames = accs => {
 };
 createUsernames(accounts);
 
+const updateUi = acc => {
+  //Display movments
+  displayMovements(acc.movements);
+  //Display balance
+  calcDisplayBalance(acc);
+  //Display summary
+  calcDisplaySummary(acc);
+};
+
 //Event handler
 let currentAccount;
 let currentAccount1;
@@ -133,18 +142,76 @@ btnLogin.addEventListener('click', e => {
     //Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
-    //Display movments
-    displayMovements(currentAccount.movements);
-    //Display balance
-    calcDisplayBalance(currentAccount.movements);
-    //Display summary
-    calcDisplaySummary(currentAccount);
+    updateUi(currentAccount);
   }
   console.log('LOGIN');
   // currentAccount1 = accounts.find(
   //   password => password.pin === Number(inputLoginPin.value)
   // );
   // console.log(currentAccount1);
+});
+
+//Transfer money
+
+btnTransfer.addEventListener('click', e => {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(
+    acc => acc.username === inputTransferTo.value
+  );
+  inputTransferAmount.value = inputTransferTo.value = '';
+  // console.log(amount, receiverAcc);
+
+  if (
+    amount > 0 &&
+    receiverAcc &&
+    currentAccount.balance >= amount &&
+    receiverAcc?.username !== currentAccount.username
+  ) {
+    //Doing the transfer
+    currentAccount.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+
+    //Up date UI
+    updateUi(currentAccount);
+  }
+});
+
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+  if (
+    amount > 0 &&
+    currentAccount.movements.some(move => move >= amount * 0.1)
+  ) {
+    //Add movement
+    currentAccount.movements.push(amount);
+
+    //Update Ui
+    updateUi(currentAccount);
+  }
+  inputLoanAmount.value = '';
+});
+
+btnClose.addEventListener('click', e => {
+  e.preventDefault();
+
+  if (
+    inputCloseUsername.value === currentAccount.username &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.username === currentAccount.username
+    );
+    console.log(index);
+    //delete account
+    accounts.splice(index, 1);
+
+    //Hide UI
+    containerApp.style.opacity = 0;
+  }
+  inputCloseUsername.value = inputClosePin.value = '';
 });
 
 //STW
@@ -373,3 +440,41 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 // const account = accounts.find(acc => (acc.owner = 'Jonas Schmedtmann'));
 // console.log(account);
+
+// console.log(movements);
+// //EQUALITY
+// console.log(movements.includes(-130));
+
+// // some CONDITION
+// console.log(movements.some(mov => mov === -130));
+
+// const anyDeposits = movements.some(mov => mov > 0);
+// console.log(anyDeposits);
+
+// //EVERY
+// console.log(movements.every(mov => mov > 0));
+
+// //Separate callback
+// const deposit = mov => mov > 0;
+
+// console.log(movements.some(deposit));
+// console.log(movements.every(deposit));
+// console.log(movements.filter(deposit));
+
+const arr = [[1, 2, 3], [4, 5, 6], 7, 8];
+console.log(arr.flat(5));
+const arrDeep = [[[1, 2], 3], [4, [5, 6]], 7, 8];
+console.log(arrDeep.flat(2));
+
+//flat
+const overalBalance = accounts
+  .map(acc => acc.movements)
+  .flat()
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(overalBalance);
+
+//flatMap
+const overalBalance1 = accounts
+  .flatMap(acc => acc.movements)
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(overalBalance1);
