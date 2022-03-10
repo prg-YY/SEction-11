@@ -61,9 +61,12 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = movements => {
+const displayMovements = (movements, sort = false) => {
   containerMovements.innerHTML = '';
-  movements.forEach((mov, i) => {
+
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
+  movs.forEach((mov, i) => {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
   <div class="movements__row">
@@ -214,6 +217,12 @@ btnClose.addEventListener('click', e => {
   inputCloseUsername.value = inputClosePin.value = '';
 });
 
+let sorted = false;
+btnSort.addEventListener('click', e => {
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
+});
 //STW
 
 /////////////////////////////////////////////////
@@ -461,20 +470,111 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 // console.log(movements.every(deposit));
 // console.log(movements.filter(deposit));
 
-const arr = [[1, 2, 3], [4, 5, 6], 7, 8];
-console.log(arr.flat(5));
-const arrDeep = [[[1, 2], 3], [4, [5, 6]], 7, 8];
-console.log(arrDeep.flat(2));
+// const arr = [[1, 2, 3], [4, 5, 6], 7, 8];
+// console.log(arr.flat(5));
+// const arrDeep = [[[1, 2], 3], [4, [5, 6]], 7, 8];
+// console.log(arrDeep.flat(2));
 
-//flat
-const overalBalance = accounts
-  .map(acc => acc.movements)
-  .flat()
-  .reduce((acc, mov) => acc + mov, 0);
-console.log(overalBalance);
+// //flat
+// const overalBalance = accounts
+//   .map(acc => acc.movements)
+//   .flat()
+//   .reduce((acc, mov) => acc + mov, 0);
+// console.log(overalBalance);
 
-//flatMap
-const overalBalance1 = accounts
+// //flatMap
+// const overalBalance1 = accounts
+//   .flatMap(acc => acc.movements)
+//   .reduce((acc, mov) => acc + mov, 0);
+// console.log(overalBalance1);
+
+//String sort
+
+// const owners = ['Josub', 'Jacob', 'Jasin', 'Batur', 'Martha'];
+// console.log(owners);
+// console.log(owners.sort());
+// console.log(owners);
+
+// //Numbers
+// console.log(movements);
+// console.log(movements.sort());
+
+// //retun < 0,A,B (keep order)
+// //return >0 ,B , A (Switch order)
+
+// //Ascending order
+// // movements.sort((a, b) => {
+// //   if (a > b) return 1;
+// //   if (a < b) return -1;
+// // });
+// movements.sort((a, b) => a - b);
+// console.log(movements);
+
+// //Decending order
+// // movements.sort((a, b) => {
+// //   if (a > b) return -1;
+// //   if (a < b) return 1;
+// // });
+// movements.sort((a, b) => b - a);
+// console.log(movements);
+
+// const arr = [1, 2, 3, 4, 5, 6, 7];
+// console.log(new Array([1, 2, 3, 4, 5, 6, 7]));
+
+// //Emty arrays + fill method
+// const x = new Array(7);
+// console.log(x);
+
+// x.fill(1, 3, 5);
+// console.log(x);
+
+// arr.fill(23, 4, 6);
+// console.log(arr);
+
+// //Array.form
+// const y = Array.from({ length: 7 }, () => 1);
+// const z = Array.from({ length: 7 }, (cur, i) => i + 1, 0);
+// console.log(y);
+// console.log(z);
+
+// labelBalance.addEventListener('click', () => {
+//   const movementUI = Array.from(
+//     document.querySelectorAll('.movements__value'),
+//     el => Number(el.textContent.replace('€', ''))
+//   );
+//   console.log(movementUI);
+
+//   const movementUI2 = [...document.querySelectorAll('.movements__value')];
+//   console.log(movementUI2);
+// });
+
+//1,
+const backDepositSum = accounts
   .flatMap(acc => acc.movements)
-  .reduce((acc, mov) => acc + mov, 0);
-console.log(overalBalance1);
+  .filter(mov => mov > 0)
+  .reduce((sum, acc) => sum + acc, 0);
+console.log(backDepositSum);
+
+//2.
+// const numDeposits1000 = accounts
+//   .flatMap(acc => acc.movements)
+//   .filter(mov => mov >= 1000).length;
+
+const numDeposits1000 = accounts
+  .flatMap(acc => acc.movements)
+  .reduce((count, cur) => (cur >= 1000 ? ++count : count), 0);
+console.log(numDeposits1000);
+
+//3,
+const { deposits, withdrawals } = accounts
+  .flatMap(acc => acc.movements)
+  .reduce(
+    (sums, cur) => {
+      // cur > 0 ? (sums.deposits += cur) : (sums.withdrawals += cur);
+      sums[cur > 0 ? 'deposits' : 'withdrawals'] += cur;
+      return sums;
+    },
+    { deposits: 0, withdrawals: 0 }
+  );
+console.log(deposits, withdrawals);
+//Chanllange 4
